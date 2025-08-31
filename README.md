@@ -36,29 +36,33 @@ spring.http.encoding.force=true
 ## 資料表設計
 
 ### 1. ***users***
-| 欄位名稱     | 資料型態                           | 說明                           |
-|--------------|------------------------------------|--------------------------------|
-| id           | INT AUTO_INCREMENT PRIMARY KEY     | 使用者唯一識別碼               |
-| first_name   | VARCHAR(50)                        | 用戶名稱                       |
-| last_name    | VARCHAR(50)                        | 姓氏                           |
-| email        | VARCHAR(100) UNIQUE NOT NULL       | 信箱                           |
-| birthday     | DATE                               | 生日 (年/月/日)                |
-| address      | VARCHAR(100)                       | 地址                           |
-| city         | VARCHAR(50)                        | 城市                           |
-| state        | VARCHAR(50)                        | 州/省                          |
-| zipcode      | VARCHAR(20)                        | 郵遞區號                       |
-| password     | VARCHAR(255) NOT NULL              | 密碼 (加密儲存)                |
-| created_at   | DATETIME DEFAULT CURRENT_TIMESTAMP | 帳號建立時間                   |
-| updated_at   | DATETIME DEFAULT CURRENT_TIMESTAMP | 用戶資料最後更新時間           |
+| 欄位名稱       | 資料型態             | 說明                          |
+|----------------|----------------------|-------------------------------|
+| id             | INT AUTO_INCREMENT   | 主鍵 (PRIMARY KEY)            |
+| first_name     | VARCHAR(50)          | 用戶名稱                      |
+| last_name      | VARCHAR(50)          |                               |
+| email          | VARCHAR(100) UNIQUE NOT NULL | 信箱，必填且唯一          |
+| birthday       | DATE                 | 生日 (年/月/日)               |
+| address        | VARCHAR(100)         | 地址                          |
+| city           | VARCHAR(50)          | 城市                          |
+| state          | VARCHAR(50)          | 州/省                         |
+| zipcode        | VARCHAR(20)          | 郵遞區號                      |
+| has_newsletter | BOOLEAN DEFAULT FALSE | 是否訂閱電子報                |
+| password       | VARCHAR(255) NOT NULL | 密碼（加密儲存）              |
+| created_at     | DATETIME DEFAULT CURRENT_TIMESTAMP | 帳號建立時間            |
+| updated_at     | DATETIME DEFAULT CURRENT_TIMESTAMP | 最後更新時間            |
 
-### 2. ***user_segments***
-| 欄位名稱       | 資料型態  | 說明                              |
-|----------------|-----------|-----------------------------------|
-| user_id        | INT       | 使用者 ID，對應 `users(id)`       |
-| segment_id     | INT       | 區段 ID，對應 `segments(id)`      |
-| has_newsletter | BOOLEAN DEFAULT FALSE | 是否訂閱電子報            |
+### 2. ***segments***
+| 欄位名稱 | 資料型態 | 說明       |
+|----------|----------|------------|
+| id       | int      | AUTO_INCREMENT, PRIMARY KEY |
+| names    | String   | VARCHAR(50), 名稱 |
 
-🔑 主鍵 (PRIMARY KEY)： (user_id, segment_id)  
-🔗 外鍵 (FOREIGN KEY)：
-- user_id → users(id)
-- segment_id → segments(id)  
+### 3. ***user_segments***
+| 欄位名稱      | 資料型態 | 說明                              |
+|---------------|----------|-----------------------------------|
+| id            | int      | AUTO_INCREMENT, PRIMARY KEY       |
+| user_id       | int      | NOT NULL, FOREIGN KEY by users(id) |
+| segment_id    | int      | NOT NULL, FOREIGN KEY by segments(id) |
+
+

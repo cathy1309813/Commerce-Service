@@ -20,6 +20,6 @@ public class Segment {
     @Column(name = "names", nullable = false, unique = true, length = 50)
     private String name;
 
-    @OneToMany(mappedBy = "segment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "segment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<UserSegment> userSegments;
 }
