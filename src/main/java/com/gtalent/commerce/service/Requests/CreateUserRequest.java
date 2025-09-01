@@ -1,5 +1,6 @@
 package com.gtalent.commerce.service.Requests;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,6 +25,7 @@ public class CreateUserRequest {
     private String email;
 
     @NotNull(message = "必須填寫")
+    @JsonFormat(pattern = "yyyy/MM/dd")
     private LocalDate birthday;
 
     @NotBlank(message = "必須填寫")
@@ -50,5 +52,5 @@ public class CreateUserRequest {
     )
     private String password;
 
-    private boolean hasNewsletter;  // true=Yes, false=No
+    private Boolean hasNewsletter = false;  //確保新增使用者時默認為未訂閱 -> false
 }

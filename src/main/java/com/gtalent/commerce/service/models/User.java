@@ -52,18 +52,18 @@ public class User {
     private String role;
 
     @Column(name = "has_newsletter", nullable = false)
-    private boolean hasNewsletter;
-
-    @Column(name = "last_seen_at")
-    private LocalDateTime lastSeenAt;
+    private Boolean hasNewsletter = false;  //默認為未訂閱 (false)
 
     @CreationTimestamp //自動填充實體的建立時間
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "first_seen", updatable = false)
+    private LocalDateTime firstLoginTime;
+
+    @Column(name = "last_seen")  //使用者登入或活動時間
+    private LocalDateTime updateLoginTime;
 
     @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "updated_at")  //資料異動時間
+    private LocalDateTime updateTime;
 
     //一個 User 對應到多個 UserSegment
     //cascade = CascadeType.ALL:
