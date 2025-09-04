@@ -1,4 +1,4 @@
-package com.gtalent.commerce.service.Responses;
+package com.gtalent.commerce.service.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.gtalent.commerce.service.Responses;
+package com.gtalent.commerce.service.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,4 +12,5 @@ public class UserResponse {
     private String firstName;
     private String lastName;
     private Boolean hasNewsletter;
+    //不傳密碼、生日、地址等敏感資料
 }

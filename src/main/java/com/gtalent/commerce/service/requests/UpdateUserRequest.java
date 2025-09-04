@@ -1,4 +1,4 @@
-package com.gtalent.commerce.service.Requests;
+package com.gtalent.commerce.service.requests;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;

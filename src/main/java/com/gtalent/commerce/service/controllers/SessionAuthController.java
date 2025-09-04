@@ -1,8 +1,7 @@
-package com.gtalent.commerce.service.Controllers;
+package com.gtalent.commerce.service.controllers;
 
-import com.gtalent.commerce.service.Requests.LoginRequest;
-import com.gtalent.commerce.service.Responses.LoginResponse;
-import com.gtalent.commerce.service.models.User;
+import com.gtalent.commerce.service.requests.LoginRequest;
+import com.gtalent.commerce.service.responses.LoginResponse;
 import com.gtalent.commerce.service.repositories.UserRepository;
 import com.gtalent.commerce.service.services.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -20,12 +19,13 @@ public class SessionAuthController {
     private final UserService userService;
     private final UserRepository userRepository;
 
-    @Autowired
+    @Autowired  //可省略
     public SessionAuthController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
     }
 
+    //TODO : Swagger API
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request, HttpSession session) {
         Optional<LoginResponse> user = userService.login(request.getEmail(), request.getPassword());

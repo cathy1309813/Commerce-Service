@@ -1,10 +1,10 @@
-package com.gtalent.commerce.service.Controllers;
+package com.gtalent.commerce.service.controllers;
 
-import com.gtalent.commerce.service.Requests.CreateUserRequest;
-import com.gtalent.commerce.service.Requests.UpdateUserRequest;
-import com.gtalent.commerce.service.Responses.CreateUserResponse;
-import com.gtalent.commerce.service.Responses.UpdateUserResponse;
-import com.gtalent.commerce.service.Responses.UserResponse;
+import com.gtalent.commerce.service.requests.CreateUserRequest;
+import com.gtalent.commerce.service.requests.UpdateUserRequest;
+import com.gtalent.commerce.service.responses.CreateUserResponse;
+import com.gtalent.commerce.service.responses.UpdateUserResponse;
+import com.gtalent.commerce.service.responses.UserResponse;
 import com.gtalent.commerce.service.models.User;
 import com.gtalent.commerce.service.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,11 +12,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -30,10 +34,10 @@ public class UserController {
         this.userService = userService;
     }
 
-    //1.取得所有使用者(查詢)
+    //1.取得所有使用者(不分頁)
     @GetMapping
-    @Operation(summary = "取得所有使用者",
-               description = "回傳系統中所有已註冊的使用者清單。" )
+    @Operation(summary = "取得所有使用者 (不分頁)",
+            description = "一次回傳系統中所有已註冊的使用者清單 (適合資料量少的情境)。")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "成功取得使用者清單"),
             @ApiResponse(responseCode = "400", description = "輸入錯誤"),
@@ -43,6 +47,29 @@ public class UserController {
         //從 Service 取得
         List<UserResponse> userList = userService.getAllUsers();
         return ResponseEntity.ok(userList);
+    }
+
+    //1.1 取得所有使用者(分頁)
+    @Operation(summary = "取得所有使用者 (分頁)",
+            description = "以分頁方式回傳系統中所有已註冊的使用者清單，避免一次載入大量資料。")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "成功取得分頁使用者清單"),
+            @ApiResponse(responseCode = "400", description = "輸入錯誤"),
+            @ApiResponse(responseCode = "500", description = "伺服器內部錯誤")
+    })
+    @GetMapping("/page")
+    public Page<UserResponse> getAllUserPages(@RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "0") int size) {
+        //建立 Pageable 物件，用於分頁查詢
+        Pageable pageRequest = PageRequest.of(page, size);
+        //呼叫 Service 層取得分頁資料，並轉成 UserResponse DTO
+        return userService.getAllUserPages(pageRequest)
+                .map(user -> new UserResponse(
+                        user.getId(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getHasNewsletter()
+                ));
     }
 
     //2.依照 ID 取得單一使用者

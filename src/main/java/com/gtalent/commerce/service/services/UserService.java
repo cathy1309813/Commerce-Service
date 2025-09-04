@@ -1,12 +1,16 @@
 package com.gtalent.commerce.service.services;
 
 
-import com.gtalent.commerce.service.Responses.LoginResponse;
-import com.gtalent.commerce.service.Responses.UserResponse;
+import com.gtalent.commerce.service.responses.LoginResponse;
+import com.gtalent.commerce.service.responses.UserResponse;
 import com.gtalent.commerce.service.models.User;
 import com.gtalent.commerce.service.repositories.UserRepository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,7 +39,13 @@ public class UserService {
                         user.getLastName(),
                         user.getHasNewsletter()
                 ))
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    //1.1 取得使用者(分頁)
+    public Page<User> getAllUserPages(Pageable pageable) {
+        // 呼叫 Repository 的 findAll(Pageable) 方法
+        return userRepository.findAll(pageable);
     }
 
     //2.依照 ID 取得單一使用者
@@ -80,7 +90,7 @@ public class UserService {
             if (updatedUser.getCity() != null) existingUser.setCity(updatedUser.getCity());
             if (updatedUser.getState() != null) existingUser.setState(updatedUser.getState());
             if (updatedUser.getZipcode() != null) existingUser.setZipcode(updatedUser.getZipcode());
-            //會員可以修改訂閱狀態
+            //使用者自己可以修改訂閱狀態
             if (updatedUser.getHasNewsletter() != null) existingUser.setHasNewsletter(updatedUser.getHasNewsletter());
 
             //儲存回資料庫
