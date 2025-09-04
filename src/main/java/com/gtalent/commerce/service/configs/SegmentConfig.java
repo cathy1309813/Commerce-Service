@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SegmentConfig {
     @Bean
-    //CommandLineRunner -> 是 Spring Boot 提供的一個接口，啟動完成後自動執行方法
+    //CommandLineRunner -> 是 Spring Boot 提供的一個接口，啟動完成後，DB 裡面一定有 SegmentType 定義的資料。
     public CommandLineRunner initSegments(SegmentRepository segmentRepository) {
         return args -> {
             for (SegmentType type : SegmentType.values()) {  //遍歷 Enum SegmentType 的所有常數
