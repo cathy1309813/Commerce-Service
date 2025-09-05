@@ -1,11 +1,13 @@
 package com.gtalent.commerce.service.controllers;
 
+import com.gtalent.commerce.service.models.UserSegment;
 import com.gtalent.commerce.service.requests.CreateUserRequest;
 import com.gtalent.commerce.service.requests.UpdateUserRequest;
 import com.gtalent.commerce.service.responses.CreateUserResponse;
 import com.gtalent.commerce.service.responses.UpdateUserResponse;
 import com.gtalent.commerce.service.responses.UserResponse;
 import com.gtalent.commerce.service.models.User;
+import com.gtalent.commerce.service.responses.UserSegmentResponse;
 import com.gtalent.commerce.service.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -21,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,14 +66,27 @@ public class UserController {
                                               @RequestParam(defaultValue = "0") int size) {
         //建立 Pageable 物件，用於分頁查詢
         Pageable pageRequest = PageRequest.of(page, size);
-        //呼叫 Service 層取得分頁資料，並轉成 UserResponse DTO
-        return userService.getAllUserPages(pageRequest)
-                .map(user -> new UserResponse(
-                        user.getId(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        user.getHasNewsletter()
-                ));
+        Page<User> usersPage = userService.getAllUserPages(pageRequest);
+
+        List<UserResponse> userResponses = new ArrayList<>();
+        for (User user : usersPage.getContent()) {
+            UserResponse ur = new UserResponse();
+            ur.setId(user.getId());
+            ur.setFirstName(user.getFirstName());
+            ur.setLastName(user.getLastName());
+            ur.setHasNewsletter(user.getHasNewsletter());
+
+            // 填充 segments
+            List<UserSegmentResponse> segmentResponses = new ArrayList<>();
+            for (UserSegment us : user.getUserSegments()) {
+                segmentResponses.add(new UserSegmentResponse(us));
+            }
+            ur.setSegments(segmentResponses);
+
+            userResponses.add(ur);
+        }
+
+        return new PageImpl<>(userResponses, pageRequest, usersPage.getTotalElements());
     }
 
     //2.依照 ID 取得單一使用者
@@ -144,6 +161,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();  //500
         }
     }
+    //@Valid = 「請幫我驗證這個物件的內容」-> 針對 CreateUserRequest 及 UpdateUserRequest 裡面的物件進行驗證。
 
     //4.更新使用者
     @PutMapping("/{id}")

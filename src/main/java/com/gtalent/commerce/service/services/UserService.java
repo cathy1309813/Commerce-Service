@@ -1,11 +1,13 @@
 package com.gtalent.commerce.service.services;
 
 
+import com.gtalent.commerce.service.models.UserSegment;
 import com.gtalent.commerce.service.responses.LoginResponse;
 import com.gtalent.commerce.service.responses.UserResponse;
 import com.gtalent.commerce.service.models.User;
 import com.gtalent.commerce.service.repositories.UserRepository;
 
+import com.gtalent.commerce.service.responses.UserSegmentResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,12 +36,22 @@ public class UserService {
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll()
                 .stream()
-                .map(user -> new UserResponse(
-                        user.getId(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        user.getHasNewsletter()
-                ))
+                .map(user -> {
+                    UserResponse ur = new UserResponse();
+                    ur.setId(user.getId());
+                    ur.setFirstName(user.getFirstName());
+                    ur.setLastName(user.getLastName());
+                    ur.setHasNewsletter(user.getHasNewsletter());
+
+                    // 建立 segments 清單
+                    List<UserSegmentResponse> segmentResponses = new ArrayList<>();
+                    for (UserSegment us : user.getUserSegments()) {
+                        segmentResponses.add(new UserSegmentResponse(us));
+                    }  //遍歷使用者的每個 UserSegment → 轉成 DTO，加入 List
+                    ur.setSegments(segmentResponses);  //把 List 放入 UserResponse 的 segments 欄位
+
+                    return ur;
+                })
                 .toList();
     }
 
