@@ -54,19 +54,36 @@ public class UserController {
     }
 
     //1.1 取得所有使用者(分頁)
-    @Operation(summary = "取得所有使用者 (分頁)",
-            description = "以分頁方式回傳系統中所有已註冊的使用者清單，避免一次載入大量資料。")
+    @GetMapping
+    @Operation(summary = "取得使用者清單（分頁 + 搜尋）",
+            description = "可依名字、Email、是否訂閱電子報、Segment 過濾")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "成功取得分頁使用者清單"),
             @ApiResponse(responseCode = "400", description = "輸入錯誤"),
             @ApiResponse(responseCode = "500", description = "伺服器內部錯誤")
     })
-    @GetMapping("/page")
-    public Page<UserResponse> getAllUserPages(@RequestParam(defaultValue = "0") int page,
-                                              @RequestParam(defaultValue = "0") int size) {
+    public Page<UserResponse> getAllUserPages(@RequestParam(defaultValue = "0") int page,  //page -> 要查詢的頁碼
+                                              @RequestParam(defaultValue = "10") int size,  //size -> 每頁要顯示的筆數
+                                              @RequestParam(defaultValue = "") String query,  //搜尋 名字 關鍵字
+                                              @RequestParam(required = false) Boolean hasNewsletter,  //
+                                              @RequestParam(required = false) Integer segmentId
+    ) {
+        /*@RequestParam
+          用途:過濾、排序、條件查詢；
+          常見HTTP方法:GET;
+         */
         //建立 Pageable 物件，用於分頁查詢
-        Pageable pageRequest = PageRequest.of(page, size);
-        Page<User> usersPage = userService.getAllUserPages(pageRequest);
+        Pageable pageRequest = PageRequest.of(page, size);  //建立一個分頁請求物件，指定要查哪一頁和每頁筆數
+        Page<User> usersPage = userService.getAllUserPages(query, hasNewsletter, segmentId, pageRequest);  //把這個分頁請求傳給 service，取得對應的分頁資料
+        /*Pageable
+          是一個介面 (interface)，用來描述 分頁資訊。
+          例如:想要查第幾頁、第幾筆、排序方式等等，都會用 Pageable 來封裝。*/
+        /* PageRequest
+           是 Pageable 的一個實作類別，專門用來建立"分頁資訊"。 */
+        /* of
+           是它的靜態方法，用來創建一個"分頁物件"。 */
+        /* Page
+           是 Spring Data JPA 提供的介面，用來表示"分頁結果"。 */
 
         List<UserResponse> userResponses = new ArrayList<>();
         for (User user : usersPage.getContent()) {
@@ -82,11 +99,17 @@ public class UserController {
                 segmentResponses.add(new UserSegmentResponse(us));
             }
             ur.setSegments(segmentResponses);
-
             userResponses.add(ur);
         }
-
         return new PageImpl<>(userResponses, pageRequest, usersPage.getTotalElements());
+        /* PageImpl<>
+           是 Spring Data JPA 提供的一個"分頁實作類別"，實作了 Page<T> 介面。 */
+        /* UserResponse
+           是分頁裡的內容列表，也就是剛剛用 for-loop 轉換好的使用者資料。 */
+        /* Pageable
+           描述"分頁請求的資訊"，如:第幾頁 (page)、每頁幾筆 (size)、排序方式(如果有的話)。*/
+        /* usersPage.getTotalElements()
+           即"從資料庫取得的分頁結果"中的"符合條件的總筆數"。*/
     }
 
     //2.依照 ID 取得單一使用者

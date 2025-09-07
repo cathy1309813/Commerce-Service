@@ -8,8 +8,12 @@ import com.gtalent.commerce.service.models.User;
 import com.gtalent.commerce.service.repositories.UserRepository;
 
 import com.gtalent.commerce.service.responses.UserSegmentResponse;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -56,9 +60,33 @@ public class UserService {
     }
 
     //1.1 取得使用者(分頁)
-    public Page<User> getAllUserPages(Pageable pageable) {
-        // 呼叫 Repository 的 findAll(Pageable) 方法
-        return userRepository.findAll(pageable);
+    public Page<User> getAllUserPages(String query, Boolean hasNewsletter, Integer segmentId, Pageable pageable) {
+        Specification<User> spec = userSpecification(query, hasNewsletter, segmentId);
+        return userRepository.findAll(spec, pageable);
+    }
+
+
+    private Specification<User> userSpecification(String queryName, Boolean hasNewsletter, Integer segmentId) {
+        return ((root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if(queryName != null && !queryName.isEmpty()) {
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), "%" + queryName.toLowerCase() + "%"),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), "%" + queryName.toLowerCase() + "%")
+                ));
+
+            }
+            if(hasNewsletter != null) {
+                predicates.add(criteriaBuilder.equal(root.get("hasNewsletter"), hasNewsletter));
+            }
+            if(segmentId != null) {
+                Join<User, UserSegment> userUserSegmentJoin = root.join("userSegments");
+                predicates.add(criteriaBuilder.equal(userUserSegmentJoin.get("segment").get("id"), segmentId));
+            }
+            Predicate[] predicatesArray = predicates.toArray(new Predicate[0]);
+            return criteriaBuilder.and(predicatesArray);
+        });
     }
 
     //2.依照 ID 取得單一使用者
