@@ -53,7 +53,6 @@ public class UserService {
                         segmentResponses.add(new UserSegmentResponse(us));
                     }  //遍歷使用者的每個 UserSegment → 轉成 DTO，加入 List
                     ur.setSegments(segmentResponses);  //把 List 放入 UserResponse 的 segments 欄位
-
                     return ur;
                 })
                 .toList();
@@ -200,7 +199,7 @@ public class UserService {
             userRepository.deleteById(id);
             return true;  //刪除成功
         } else {
-            return false; // 使用者不存在
+            return false;  //使用者不存在
         }
     }
 
