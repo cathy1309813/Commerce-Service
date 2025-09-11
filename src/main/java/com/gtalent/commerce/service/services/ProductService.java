@@ -20,12 +20,11 @@ import java.util.Optional;
 @Service
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
-
+    private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
-    public ProductService(CategoryRepository categoryRepository) {
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
+        this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
     }
 
@@ -135,5 +134,13 @@ public class ProductService {
     }
 
     //5.刪除產品
+    public void deleteProduct(int id) {
+        Optional<Product> optionalProduct = productRepository.findById(id);
+        if (optionalProduct.isEmpty()) {
+            throw new RuntimeException("Product not found");
+        }
+        Product product = optionalProduct.get();
+        productRepository.delete(product);
+    }
 
 }

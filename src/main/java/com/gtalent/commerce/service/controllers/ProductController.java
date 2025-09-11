@@ -82,4 +82,15 @@ public class ProductController {
     }
 
     //5.刪除產品
+    @DeleteMapping("/{id}")
+    @Operation(summary = "刪除產品", description = "刪除指定產品")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "產品刪除成功"),
+            @ApiResponse(responseCode = "404", description = "找不到產品"),
+            @ApiResponse(responseCode = "500", description = "系統錯誤")
+    })
+    public ResponseEntity<Void> deleteProduct(@PathVariable int id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();  //204 No Content
+    }
 }
