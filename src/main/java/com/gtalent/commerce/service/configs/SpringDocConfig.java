@@ -38,7 +38,8 @@ public class SpringDocConfig {
     public GroupedOpenApi groupedOpenApi() {
         return GroupedOpenApi.builder()
                 .group("public-api")  //群組名稱
-                .pathsToMatch("/commerce-service/users/**", "/commerce-service/user-segments/**")
+                .pathsToMatch("/commerce-service/users/**", "/commerce-service/user-segments/**",
+                        "/commerce-service/categories/**", "/commerce-service/products/**")
                 .build();
     }
 

@@ -1,4 +1,8 @@
 package com.gtalent.commerce.service.repositories;
 
-public interface ProductRepository {
+import com.gtalent.commerce.service.models.Product;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+//提供最基本的 CRUD 操作（查詢、儲存、刪除）
+public interface ProductRepository extends JpaRepository<Product, Integer> {
 }

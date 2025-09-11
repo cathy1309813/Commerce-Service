@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "分類功能-第一版", description = "提供分類列表查詢、新增與軟刪除功能")
+@Tag(name = "Category 功能-第一版", description = "提供分類列表查詢、新增與軟刪除功能")
 @RestController
 @RequestMapping("/commerce-service/categories")
 public class CategoryController {

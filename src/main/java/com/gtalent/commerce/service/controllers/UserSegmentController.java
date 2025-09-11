@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-@Tag(name = "User-Segment 功能", description = "提供使用者與 Segment 之間的查詢、分配與移除 API")
+@Tag(name = "User-Segment 功能-第一版", description = "提供使用者與 Segment 之間的查詢、分配與移除 API")
 @RestController  //物件轉成 JSON
 @RequestMapping("/commerce-service/user-segments")
 public class UserSegmentController {

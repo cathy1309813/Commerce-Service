@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Tag(name = "使用者功能-第一版", description = "提供使用者功能 API")
+@Tag(name = "User 功能-第一版", description = "提供使用者功能 API")
 @RestController
 @RequestMapping("/commerce-service/users")
 public class UserController {
@@ -54,7 +54,7 @@ public class UserController {
     }
 
     //1.1 取得所有使用者(分頁)
-    @GetMapping
+    @GetMapping("/{page}")
     @Operation(summary = "取得使用者清單（分頁 + 搜尋）",
             description = "可依名字、Email、是否訂閱電子報、Segment 過濾")
     @ApiResponses(value = {
