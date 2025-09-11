@@ -64,30 +64,82 @@ public class UserService {
         Specification<User> spec = userSpecification(query, hasNewsletter, segmentId);
         return userRepository.findAll(spec, pageable);
     }
-
+    /* query：
+       關鍵字 (可為 null 或空字串 "")，用來模糊搜尋 firstName/lastName。*/
+    /* hasNewsletter：
+       布林過濾 (true / false / null)。null 表示不套用此條件。*/
+    /* segmentId：
+       數字過濾 (null 表示不套用)。通常會 JOIN userSegments 去比對 segment.id。*/
+    /* pageable：
+       分頁與排序資訊 (由 Controller 產生，通常 PageRequest.of(page, size, sort))。*/
+    /* 建立 Specification：
+       Specification<User> spec = userSpecification(...) 呼叫 userSpecification，
+       回傳一個 Lambda（或匿名類別），其核心為 toPredicate(root, query, criteriaBuilder)。
+       這個 Specification 在被傳給 userRepository.findAll(spec, pageable) 時，
+       會被 JPA（Hibernate）用來建立 CriteriaQuery。*/
 
     private Specification<User> userSpecification(String queryName, Boolean hasNewsletter, Integer segmentId) {
+        /* 回傳值：
+           Specification<User> —— 一個可以被 Spring Data JPA 用來產生 WHERE 條件的物件（實作為 lambda）。
+           參數：
+           queryName -> 文字關鍵字，用來模糊搜尋（例如名字、姓氏、Email 等）。
+           hasNewsletter -> Boolean，若為 null 表示不過濾；true/false 則添加對應過濾。
+           segmentId -> Integer，若為 null 表示不過濾；有值則加入 JOIN 篩選。*/
         return ((root, query, criteriaBuilder) -> {
+            //建立一個 predicates 列表
             List<Predicate> predicates = new ArrayList<>();
+            //if predicates.size() = 3 how many "AND"? => 2
+            //if predicates.size() = 8  how many "AND"? => 7
 
             if(queryName != null && !queryName.isEmpty()) {
                 predicates.add(criteriaBuilder.or(
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), "%" + queryName.toLowerCase() + "%"),
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), "%" + queryName.toLowerCase() + "%")
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), "%" +
+                                queryName.toLowerCase() + "%"),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), "%" +
+                                queryName.toLowerCase() + "%")
+                /* criteriaBuilder.lower(...)：
+                   將欄位轉成小寫（DB 層面），配合 queryName.toLowerCase()，達到不分大小寫的搜尋。*/
+                /* like(..., "%...%")：
+                   左右都加 %，代表模糊搜尋（Anywhere match）。*/
+                /* criteriaBuilder.or(...)：
+                   把 firstName LIKE ... 與 lastName LIKE ... 用 OR 結合（符合任一即可）。*/
                 ));
-
             }
             if(hasNewsletter != null) {
                 predicates.add(criteriaBuilder.equal(root.get("hasNewsletter"), hasNewsletter));
+                /* criteriaBuilder.equal(...)：
+                   它是 Criteria API 提供的方法，用來產生 SQL 裡的 等號比對條件 (=)。*/
+                /* root.get("hasNewsletter") 代表什麼？
+                   root 代表查詢的主實體（這裡是 User）。
+                   root.get("hasNewsletter") → 此表達式 = 指向 User 物件中的 hasNewsletter 欄位。*/
+                /* hasNewsletter 參數代表什麼？
+                   這是從方法裡傳進來的參數（Boolean 型別）。
+                   hasNewsletter = true → 代表要找「有訂閱電子報」的使用者。
+                   hasNewsletter = false → 代表要找「沒有訂閱電子報」的使用者。*/
             }
             if(segmentId != null) {
+                //把 User 跟 UserSegment 做 join
                 Join<User, UserSegment> userUserSegmentJoin = root.join("userSegments");
                 predicates.add(criteriaBuilder.equal(userUserSegmentJoin.get("segment").get("id"), segmentId));
+                /* criteriaBuilder.equal(...)：
+                   產生 SQL 裡的 = 條件。*/
+                /* userUserSegmentJoin.get("segment").get("id")：
+                   此表達式 = 取出 segment 的 id。*/
+
+                //如果 userSegment有 屬性segmentId 則可以直接使用
+                //predicates.add(criteriaBuilder.equal(userUserSegmentJoin.get("segmentId"), segmentId));
+
+                //如果欲查詢Segment參數為字串（name）=> segmentName
+                //predicates.add(criteriaBuilder.equal(userUserSegmentJoin.get("segment").get("name"), segmentName)
             }
             Predicate[] predicatesArray = predicates.toArray(new Predicate[0]);
+            //toArray(new Predicate[0]) → 把 List 轉成陣列
             return criteriaBuilder.and(predicatesArray);
+            //criteriaBuilder.and(...) → 把多個條件用 AND 連接起來。*/
         });
     }
+
+
 
     //2.依照 ID 取得單一使用者
     public Optional<User> getUserById(int id) {  //Optional<> :回傳值可能不存在
