@@ -13,4 +13,5 @@ import java.util.List;
 public class CategoryResponse {
     private int id;
     private String name;
+    private List<ProductListResponse> products; // 包含分類下的產品
 }

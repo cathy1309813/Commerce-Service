@@ -4,12 +4,15 @@ import com.gtalent.commerce.service.models.Category;
 import com.gtalent.commerce.service.repositories.CategoryRepository;
 import com.gtalent.commerce.service.requests.CreateCategoryRequest;
 import com.gtalent.commerce.service.responses.CategoryResponse;
+import com.gtalent.commerce.service.responses.ProductListResponse;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class CategoryService {
@@ -20,7 +23,7 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
-    //1.查詢所有分類
+    //1.查詢所有分類 (包含分類下的產品列表)
     public List<CategoryResponse> getAllCategories() {
         return categoryRepository.findAll()
                 .stream()
@@ -29,6 +32,22 @@ public class CategoryService {
                     CategoryResponse response = new CategoryResponse();
                     response.setId(category.getId());
                     response.setName(category.getName());
+
+                    //轉換分類下產品為 DTO
+                    List<ProductListResponse> productList = category.getProductList()
+                            .stream()
+                            .map(product -> {
+                                ProductListResponse products = new ProductListResponse();
+                                products.setId(product.getId());
+                                products.setImageUrl(product.getImageUrl());
+                                products.setThumbnailUrl(product.getThumbnailUrl());
+                                products.setReference(product.getReference());
+                                products.setPrice(product.getPrice());
+                                products.setStock(product.getStock());
+                                return products;
+                            })
+                            .toList();
+                    response.setProducts(productList);
                     return response;
                 })
                 .toList();

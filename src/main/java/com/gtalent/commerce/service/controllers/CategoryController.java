@@ -25,25 +25,25 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    //1.查詢所有分類
+    //1.查詢所有分類 (包含分類下的產品列表)
     @GetMapping
-    @Operation(summary = "取得所有分類",
-            description = "回傳所有分類清單，不包含已軟刪除的分類")
+    @Operation(summary = "取得所有分類", description = "回傳分類及分類底下產品資訊")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "成功取得分類清單"),
-            @ApiResponse(responseCode = "400", description = "請求參數錯誤")
+            @ApiResponse(responseCode = "200", description = "成功取得分類列表"),
+            @ApiResponse(responseCode = "500", description = "系統錯誤")
     })
-    public List<CategoryResponse> getAllCategories() {
-        return categoryService.getAllCategories();
+    public ResponseEntity<List<CategoryResponse>> getAllCategories() {
+        List<CategoryResponse> categories = categoryService.getAllCategories();
+        return ResponseEntity.ok(categories);
     }
 
     //2.建立分類
     @PostMapping
-    @Operation(summary = "建立新分類",
-            description = "依據 CreateCategoryRequest 建立新的分類，名稱不可重複")
+    @Operation(summary = "建立分類", description = "新增一個分類")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "成功建立分類"),
-            @ApiResponse(responseCode = "400", description = "參數錯誤或名稱重複")
+            @ApiResponse(responseCode = "400", description = "欄位驗證失敗"),
+            @ApiResponse(responseCode = "500", description = "系統錯誤")
     })
     public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
         CategoryResponse response = categoryService.createCategory(request);
@@ -52,11 +52,11 @@ public class CategoryController {
 
     //3.軟刪除分類
     @DeleteMapping("/{id}")
-    @Operation(summary = "軟刪除分類",
-            description = "依分類 ID 將分類標記為已刪除，不會實際移除資料庫資料")
+    @Operation(summary = "刪除分類", description = "軟刪除指定分類")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "成功軟刪除分類"),
-            @ApiResponse(responseCode = "404", description = "分類不存在")
+            @ApiResponse(responseCode = "204", description = "分類刪除成功"),
+            @ApiResponse(responseCode = "404", description = "找不到分類"),
+            @ApiResponse(responseCode = "500", description = "系統錯誤")
     })
     public ResponseEntity<Void> softDeleteCategory(@PathVariable int id) {
         categoryService.softDeleteCategory(id);
