@@ -2,6 +2,7 @@ package com.gtalent.commerce.service.controllers;
 
 import com.gtalent.commerce.service.models.Product;
 import com.gtalent.commerce.service.requests.CreateProductRequest;
+import com.gtalent.commerce.service.responses.CategoryResponse;
 import com.gtalent.commerce.service.responses.ProductDetailResponse;
 import com.gtalent.commerce.service.responses.ProductListResponse;
 import com.gtalent.commerce.service.services.ProductService;
@@ -49,8 +50,9 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "產品不存在"),
             @ApiResponse(responseCode = "500", description = "系統錯誤")
     })
-    public ProductDetailResponse getProductById(@PathVariable int id) {
-        return productService.getProductById(id);
+    public ResponseEntity<ProductDetailResponse> getProductById(@PathVariable int id) {
+        ProductDetailResponse response = productService.getProductById(id);
+        return ResponseEntity.ok(response);
     }
 
     //3.新增產品
@@ -61,9 +63,27 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "欄位驗證失敗"),
             @ApiResponse(responseCode = "500", description = "系統錯誤")
     })
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody CreateProductRequest request) {
-        Product createdProduct = productService.createProduct(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+    public ResponseEntity<ProductDetailResponse> createProduct(@Valid @RequestBody CreateProductRequest request) {
+        ProductDetailResponse createdProduct = productService.createProduct(request);
+
+        ProductDetailResponse response = new ProductDetailResponse();
+        response.setId(createdProduct.getId());
+        response.setReference(createdProduct.getReference());
+        response.setPrice(createdProduct.getPrice());
+        response.setStock(createdProduct.getStock());
+        response.setSales(createdProduct.getSales());
+        response.setDescription(createdProduct.getDescription());
+        response.setThumbnailUrl(createdProduct.getThumbnailUrl());
+        response.setWidth(createdProduct.getWidth());
+        response.setHeight(createdProduct.getHeight());
+
+        if (createdProduct.getCategory() != null) {
+            CategoryResponse categoryResponse = new CategoryResponse();
+            categoryResponse.setId(createdProduct.getCategory().getId());
+            categoryResponse.setName(createdProduct.getCategory().getName());
+            response.setCategory(categoryResponse);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     //4.更新產品
@@ -75,10 +95,29 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "找不到產品"),
             @ApiResponse(responseCode = "500", description = "系統錯誤")
     })
-    public ResponseEntity<Product> updateProduct(@PathVariable int id,
+    public ResponseEntity<ProductDetailResponse> updateProduct(@PathVariable int id,
                                                  @Valid @RequestBody CreateProductRequest request) {
-        Product updatedProduct = productService.updateProduct(id, request);
-        return ResponseEntity.ok(updatedProduct);
+        ProductDetailResponse updatedProduct = productService.updateProduct(id, request);
+
+        ProductDetailResponse response = new ProductDetailResponse();
+        response.setId(updatedProduct.getId());
+        response.setReference(updatedProduct.getReference());
+        response.setPrice(updatedProduct.getPrice());
+        response.setStock(updatedProduct.getStock());
+        response.setSales(updatedProduct.getSales());
+        response.setDescription(updatedProduct.getDescription());
+        response.setThumbnailUrl(updatedProduct.getThumbnailUrl());
+        response.setWidth(updatedProduct.getWidth());
+        response.setHeight(updatedProduct.getHeight());
+
+        if (updatedProduct.getCategory() != null) {
+            CategoryResponse categoryResponse = new CategoryResponse();
+            categoryResponse.setId(updatedProduct.getCategory().getId());
+            categoryResponse.setName(updatedProduct.getCategory().getName());
+            response.setCategory(categoryResponse);
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     //5.刪除產品

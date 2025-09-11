@@ -91,7 +91,7 @@ public class ProductService {
     }
 
     //3.新增產品
-    public Product createProduct(CreateProductRequest request) {
+    public ProductDetailResponse createProduct(CreateProductRequest request) {
         Product product = new Product();
         product.setReference(request.getReference());
         product.setWidth(BigDecimal.valueOf(request.getWidth()));
@@ -108,13 +108,34 @@ public class ProductService {
             product.setCategory(category);
         }
 
-        return productRepository.save(product);
+        Product createdProduct = productRepository.save(product);
+
+        ProductDetailResponse response = new ProductDetailResponse();
+        response.setId(createdProduct.getId());
+        response.setReference(createdProduct.getReference());
+        response.setPrice(createdProduct.getPrice());
+        response.setStock(createdProduct.getStock());
+        response.setSales(createdProduct.getSales());
+        response.setDescription(createdProduct.getDescription());
+        response.setThumbnailUrl(createdProduct.getThumbnailUrl());
+        response.setWidth(createdProduct.getWidth());
+        response.setHeight(createdProduct.getHeight());
+
+        if (createdProduct.getCategory() != null) {
+            CategoryResponse categoryResponse = new CategoryResponse();
+            categoryResponse.setId(createdProduct.getCategory().getId());
+            categoryResponse.setName(createdProduct.getCategory().getName());
+            response.setCategory(categoryResponse);
+        }
+        return response;
     }
 
     //4.更新產品
-    public Product updateProduct(int id, CreateProductRequest request) {
+    public ProductDetailResponse updateProduct(int id, CreateProductRequest request) {
+        //1.根據 ID 取得現有產品(若不存在則拋出例外)
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("無此產品"));
+        //2.更新產品欄位
         product.setReference(request.getReference());
         product.setWidth(BigDecimal.valueOf(request.getWidth()));
         product.setHeight(BigDecimal.valueOf(request.getHeight()));
@@ -124,13 +145,35 @@ public class ProductService {
         product.setDescription(request.getDescription());
         product.setThumbnailUrl(request.getThumbnail());
 
-        //更新分類
+        //3.更新分類
         if (request.getCategoryId() != null) {
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new RuntimeException("無此分類"));
             product.setCategory(category);
         }
-        return productRepository.save(product);
+        //4.儲存更新後的產品
+        Product updatedProduct = productRepository.save(product);
+
+        //5.將更新後的產品轉成 DTO 回傳，而不是直接回傳 Entity
+        ProductDetailResponse response = new ProductDetailResponse();
+        response.setId(updatedProduct.getId());
+        response.setReference(updatedProduct.getReference());
+        response.setPrice(updatedProduct.getPrice());
+        response.setStock(updatedProduct.getStock());
+        response.setSales(updatedProduct.getSales());
+        response.setDescription(updatedProduct.getDescription());
+        response.setThumbnailUrl(updatedProduct.getThumbnailUrl());
+        response.setWidth(updatedProduct.getWidth());
+        response.setHeight(updatedProduct.getHeight());
+
+        //6.設定分類 DTO
+        if (updatedProduct.getCategory() != null) {
+            CategoryResponse categoryResponse = new CategoryResponse();
+            categoryResponse.setId(updatedProduct.getCategory().getId());
+            categoryResponse.setName(updatedProduct.getCategory().getName());
+            response.setCategory(categoryResponse);
+        }
+        return response;
     }
 
     //5.刪除產品
