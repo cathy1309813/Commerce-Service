@@ -2,7 +2,7 @@ package com.gtalent.commerce.service.services;
 
 import com.gtalent.commerce.service.models.Category;
 import com.gtalent.commerce.service.models.Product;
-import com.gtalent.commerce.service.models.User;
+
 import com.gtalent.commerce.service.repositories.CategoryRepository;
 import com.gtalent.commerce.service.repositories.ProductRepository;
 import com.gtalent.commerce.service.requests.CreateProductRequest;
@@ -219,14 +219,11 @@ public class ProductService {
     public void deleteProduct(int id) {
         Optional<Product> optionalProduct = productRepository.findById(id);
         if (optionalProduct.isEmpty()) {
-            throw new RuntimeException("Product not found");
+            throw new RuntimeException("產品不存在");
         }
         Product product = optionalProduct.get();
         productRepository.delete(product);
     }
-
-    //6.取得某產品的評論
-    //7.新增評論
 
 
 }

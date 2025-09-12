@@ -28,7 +28,7 @@ public class Product {
     @Column(name = "reference", nullable = false, length = 50)
     private String reference;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false)
     private Category category;   //直接關聯到 Category
 
