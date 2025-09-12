@@ -2,19 +2,19 @@ package com.gtalent.commerce.service.controllers;
 
 import com.gtalent.commerce.service.models.Product;
 import com.gtalent.commerce.service.requests.CreateProductRequest;
-import com.gtalent.commerce.service.responses.CategoryResponse;
-import com.gtalent.commerce.service.responses.ProductDetailResponse;
-import com.gtalent.commerce.service.responses.ProductListResponse;
+import com.gtalent.commerce.service.responses.*;
 import com.gtalent.commerce.service.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -40,6 +40,46 @@ public class ProductController {
         //從 Service 取得
         List<ProductListResponse> productList = productService.getAllProducts();
         return ResponseEntity.ok(productList);
+    }
+
+    //1.1 查詢所有產品 (分頁)
+    @GetMapping("/{page}")
+    @Operation(summary = "取得產品清單（分頁 + 搜尋）",
+            description = "可依產品名稱、分類、庫存篩選、銷售狀態過濾，並支援分頁與排序")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "成功取得分頁產品清單"),
+            @ApiResponse(responseCode = "400", description = "輸入錯誤"),
+            @ApiResponse(responseCode = "500", description = "伺服器內部錯誤")
+    })
+    public Page<ProductListResponse> getAllProductPages(
+            @RequestParam(defaultValue = "0") int page,  //要查詢的頁碼
+            @RequestParam(defaultValue = "10") int size,  //每頁要顯示的筆數
+            @RequestParam(defaultValue = "") String query,  //搜尋 名稱關鍵字
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) Integer stockFrom,
+            @RequestParam(required = false) Integer stockTo
+    ) {
+        //建立 Pageable 物件，用於分頁查詢
+        Pageable pageable = PageRequest.of(page, size);
+        //呼叫 service，返回 Page<Product>
+        Page<Product> productsPage = productService.getAllProductPages(query, categoryId, stockFrom, stockTo, pageable);
+        //將 Page<Product> 轉成 Page<ProductListResponse>
+        return productsPage.map(this::toResponse);  //直接用 map 轉 DTO
+    }
+    private ProductListResponse toResponse(Product product) {
+        CategoryResponse category = new CategoryResponse();
+        category.setId(product.getCategory().getId());
+        category.setName(product.getCategory().getName());
+
+        return ProductListResponse.builder()
+                .id(product.getId())
+                .reference(product.getReference())
+                .imageUrl(product.getImageUrl())
+                .thumbnailUrl(product.getThumbnailUrl())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .category(category)
+                .build();
     }
 
     //2.查詢單一產品

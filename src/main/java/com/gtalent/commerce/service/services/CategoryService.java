@@ -6,9 +6,12 @@ import com.gtalent.commerce.service.requests.CreateCategoryRequest;
 import com.gtalent.commerce.service.responses.CategoryResponse;
 import com.gtalent.commerce.service.responses.ProductListResponse;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,11 +60,11 @@ public class CategoryService {
     public CategoryResponse createCategory(CreateCategoryRequest request) {
         //必填欄位檢查
         if (request.getName() == null || request.getName().isBlank()) {
-            throw new IllegalArgumentException("分類名稱必填");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "分類名稱必填");
         }
         //名稱不可重複
         if (categoryRepository.existsByName(request.getName())) {
-            throw new IllegalArgumentException("分類名稱已存在");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "分類名稱已存在");
         }
         Category category = new Category();
         category.setName(request.getName());
@@ -71,16 +74,19 @@ public class CategoryService {
         CategoryResponse response = new CategoryResponse();
         response.setId(category.getId());
         response.setName(category.getName());
+        response.setProducts(Collections.emptyList());
+        /* response.setProducts(Collections.emptyList());
+           目的 -> 預設一個空列表，就算沒有產品，也可以保證 products 一定是陣列*/
         return response;
     }
 
     //3.軟刪除分類
     public void softDeleteCategory(int id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("分類不存在"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "分類不存在"));
         //判斷是否已經刪除
         if (category.getDeletedAt() != null) {
-            throw new IllegalArgumentException("分類已被刪除");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "分類已被刪除");
         }
 
         category.setDeletedAt(LocalDateTime.now());

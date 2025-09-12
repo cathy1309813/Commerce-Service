@@ -9,11 +9,15 @@ import com.gtalent.commerce.service.requests.CreateProductRequest;
 import com.gtalent.commerce.service.responses.CategoryResponse;
 import com.gtalent.commerce.service.responses.ProductDetailResponse;
 import com.gtalent.commerce.service.responses.ProductListResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.domain.Page;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,6 +57,41 @@ public class ProductService {
                     return response;
                 })
                 .toList();
+    }
+
+    //1.1 查詢所有產品 (分頁)
+    public Page<Product> getAllProductPages(String query, Integer categoryId, Integer stockFrom, Integer stockTo,
+                                            Pageable pageable) {
+        Specification<Product> spec = productSpecification(query, categoryId, stockFrom, stockTo);
+        return productRepository.findAll(spec, pageable);
+    }
+
+    private Specification<Product> productSpecification(String queryName, Integer categoryId, Integer stockFrom,
+                                                        Integer stockTo) {
+        return ((root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if(queryName != null && !queryName.isEmpty()) {
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("reference")), "%"+ queryName.toLowerCase()+"%")
+                ));
+            }
+            //分類 ID 篩選
+            if(categoryId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("category").get("id"), categoryId));
+            }
+            //庫存區間
+            if (stockFrom != null && stockTo != null) {
+                predicates.add(criteriaBuilder.between(root.get("stock"), stockFrom, stockTo));
+            } else if (stockFrom != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("stock"), stockFrom));
+            } else if (stockTo != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("stock"), stockTo));
+            }
+
+            Predicate[] predicateArray = predicates.toArray(new Predicate[0]);
+            return criteriaBuilder.and(predicateArray);
+        });
     }
 
     //2.查詢單一產品 (詳細產品資訊)
@@ -185,5 +224,9 @@ public class ProductService {
         Product product = optionalProduct.get();
         productRepository.delete(product);
     }
+
+    //6.取得某產品的評論
+    //7.新增評論
+
 
 }

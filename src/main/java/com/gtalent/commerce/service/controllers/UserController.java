@@ -73,7 +73,7 @@ public class UserController {
           常見HTTP方法:GET;
          */
         //建立 Pageable 物件，用於分頁查詢
-        Pageable pageRequest = PageRequest.of(page, size);  //建立一個分頁請求物件，指定要查哪一頁和每頁筆數
+        PageRequest pageRequest = PageRequest.of(page, size);  //建立一個分頁請求物件，指定要查哪一頁和每頁筆數
         Page<User> usersPage = userService.getAllUserPages(query, hasNewsletter, segmentId, pageRequest);  //把這個分頁請求傳給 service，取得對應的分頁資料
         /*Pageable
           是一個介面 (interface)，用來描述 分頁資訊。
