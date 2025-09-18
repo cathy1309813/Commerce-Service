@@ -18,7 +18,7 @@ public class SpringDocConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info().title("E-Commerce Admin Dashboard APIs")
-                        .description("根據 https://marmelab.com/react-admin-demo ，使用Springboot + MySQL 開發管理後台API系統，並以Swagger 呈現API文件。")
+                        .description("根據 https://marmelab.com/react-admin-demo，使用Springboot + MySQL 開發管理後台API系統，並以Swagger 呈現API文件。")
                         .version("v1.0.0")
 
                 )
@@ -39,7 +39,8 @@ public class SpringDocConfig {
         return GroupedOpenApi.builder()
                 .group("public-api")  //群組名稱
                 .pathsToMatch("/commerce-service/users/**", "/commerce-service/user-segments/**",
-                        "/commerce-service/categories/**", "/commerce-service/products/**")
+                        "/commerce-service/categories/**", "/commerce-service/products/**",
+                        "/commerce-service/reviews/**", "/jwt/**")
                 .build();
     }
 

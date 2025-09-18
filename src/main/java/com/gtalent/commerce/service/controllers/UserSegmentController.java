@@ -7,6 +7,7 @@ import com.gtalent.commerce.service.services.UserSegmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import java.util.Optional;
 @Tag(name = "User-Segment 功能-第一版", description = "提供使用者與 Segment 之間的查詢、分配與移除 API")
 @RestController  //物件轉成 JSON
 @RequestMapping("/commerce-service/user-segments")
+@SecurityRequirement(name = "bearerAuth")
 public class UserSegmentController {
     @Autowired
     private UserSegmentService userSegmentService;

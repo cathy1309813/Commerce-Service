@@ -1,6 +1,7 @@
 package com.gtalent.commerce.service.requests;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,7 +25,7 @@ public class CreateUserRequest {
     private String email;
 
     @NotNull(message = "必須填寫")
-    @JsonFormat(pattern = "yyyy/MM/dd")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
 
     @NotBlank(message = "必須填寫")

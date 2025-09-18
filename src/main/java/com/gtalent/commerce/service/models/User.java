@@ -73,7 +73,10 @@ public class User {
     /* fetch = FetchType.LAZY:
        1.關聯資料不會在主實體查詢時立即被讀取，而是等到你真正 訪問關聯屬性 時才去資料庫查詢。
        2.減少不必要的資料庫查詢以提高效能。*/
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<UserSegment> userSegments;
+    /* fetch = FetchType.EAGER:
+       1.立即載入：只要查 User，JPA 會自動同時抓出所有關聯的 UserSegment。
+       2.適用情境：關聯資料量小，幾乎每次都需要用到時方便。*/
 
 }

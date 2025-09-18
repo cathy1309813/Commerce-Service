@@ -1,11 +1,13 @@
 package com.gtalent.commerce.service.controllers;
 
 import com.gtalent.commerce.service.services.UserSegmentService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/commerce-service/user-segments")
+@SecurityRequirement(name = "bearerAuth")
 public class SegmentController {
     private final UserSegmentService userSegmentService;
 

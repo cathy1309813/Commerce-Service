@@ -13,4 +13,5 @@ public class LoginResponse {
     private int id;
     private String email;
     private LocalDateTime lastLoginTime;  //最後登入時間
+    private String token;                 //JWT Token
 }

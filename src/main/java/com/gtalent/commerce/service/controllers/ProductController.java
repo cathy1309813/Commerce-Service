@@ -7,6 +7,7 @@ import com.gtalent.commerce.service.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.*;
@@ -21,6 +22,7 @@ import java.util.List;
 @Tag(name = "Product 功能-第一版", description = "提供產品相關 API")
 @RestController
 @RequestMapping("/commerce-service/products")
+@SecurityRequirement(name = "bearerAuth")
 public class ProductController {
 
     private final ProductService productService;
@@ -43,7 +45,7 @@ public class ProductController {
     }
 
     //1.1 查詢所有產品 (分頁)
-    @GetMapping("/{page}")
+    @GetMapping("/page/{page}")
     @Operation(summary = "取得產品清單（分頁 + 搜尋）",
             description = "可依產品名稱、分類、庫存篩選、銷售狀態過濾，並支援分頁與排序")
     @ApiResponses(value = {

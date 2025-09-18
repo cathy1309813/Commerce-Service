@@ -29,11 +29,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;  //1.在"pom.xml"中注入依賴 2.在configs中加入SecurityConfig並新增@Bean
+    private JwtService jwtService;
 
     //注入建構子
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     //1.取得所有使用者
@@ -205,15 +207,19 @@ public class UserService {
 
     //6.使用 email + password 登入並更新最後登入時間
     public Optional<LoginResponse> login(String email, String password) {
-        Optional<User> user = userRepository.findByEmail(email);
+        Optional<User> user = userRepository.findByEmail(email);  //從資料庫查找對應 Email 的使用者
         if (user.isPresent() && passwordEncoder.matches(password, user.get().getPassword())) {
             User existingUser = user.get();
             existingUser.setUpdateLoginTime(LocalDateTime.now());  //更新登入時間
             userRepository.save(existingUser);  //存回資料庫
+            String token = jwtService.generateToken(existingUser);  //產生 JWT
+
+            //將使用者資訊與 JWT 包成 LoginResponse 回傳
             return Optional.of(new LoginResponse(
                     existingUser.getId(),
                     existingUser.getEmail(),
-                    existingUser.getUpdateLoginTime()
+                    existingUser.getUpdateLoginTime(),
+                    token
             ));
         }
         return Optional.empty();  //帳號不存在或密碼錯誤

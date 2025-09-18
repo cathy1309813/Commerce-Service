@@ -12,6 +12,7 @@ import com.gtalent.commerce.service.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
@@ -31,6 +32,7 @@ import java.util.Optional;
 @Tag(name = "User 功能-第一版", description = "提供使用者功能 API")
 @RestController
 @RequestMapping("/commerce-service/users")
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
     private final UserService userService;
 
@@ -56,7 +58,8 @@ public class UserController {
     //1.1 取得所有使用者(分頁)
     @GetMapping("/{page}")
     @Operation(summary = "取得使用者清單（分頁 + 搜尋）",
-            description = "可依名字、Email、是否訂閱電子報、Segment 過濾")
+            description = "可依名字、Email、是否訂閱電子報、Segment 過濾",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "成功取得分頁使用者清單"),
             @ApiResponse(responseCode = "400", description = "輸入錯誤"),
