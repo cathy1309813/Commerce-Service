@@ -19,10 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@Tag(name = "Product 功能-第一版", description = "提供產品相關 API")
+
 @RestController
 @RequestMapping("/commerce-service/products")
 @SecurityRequirement(name = "bearerAuth")
+@Tag(name = "Product 功能-第一版", description = "提供產品相關 API")
 public class ProductController {
 
     private final ProductService productService;

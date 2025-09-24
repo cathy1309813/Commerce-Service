@@ -1,5 +1,7 @@
 package com.gtalent.commerce.service.services;
 
+import com.gtalent.commerce.service.dto.CustomerDto;
+import com.gtalent.commerce.service.dto.ProductDto;
 import com.gtalent.commerce.service.enums.ReviewStatus;
 import com.gtalent.commerce.service.models.Product;
 import com.gtalent.commerce.service.models.Review;
@@ -35,6 +37,7 @@ public class ReviewService {
     private ProductRepository productRepository;
     @Autowired
     private UserRepository userRepository;
+
 
     //1.取得某產品的所有評論 (分頁)
     public Page<ReviewResponse> getProductReviews(int productId, int page, int size, String sort, String direction,
@@ -151,18 +154,34 @@ public class ReviewService {
         }
 
     }
+    //5.取得單筆評論詳細
+    public Optional<Review> findById(int reviewId) {
+        return reviewRepository.findById(reviewId);
+    }
 
 
     private ReviewResponse mapToResponse(Review review) {
+        // 建立 CustomerDto
+        CustomerDto customerDto = new CustomerDto(
+                review.getCustomer().getId(),
+                review.getCustomer().getFirstName(),
+                review.getCustomer().getLastName()
+        );
+
+        // 建立 ProductDto（只包含 ID）
+        ProductDto productDto = new ProductDto(review.getProduct().getId());
+
+        // 建立 ReviewResponse
         ReviewResponse response = new ReviewResponse();
         response.setId(review.getId());
         response.setRating(review.getRating());
         response.setComment(review.getComment());
-        response.setUserId(review.getCustomer().getId());
-        response.setProductId(review.getProduct().getId());
+        response.setCustomer(customerDto);   // 改成設定 DTO
+        response.setProduct(productDto);     // 改成設定 DTO
         response.setStatus(review.getStatus().name());
         response.setDate(review.getDate());
         response.setCreatedAt(review.getCreatedAt());
+
         return response;
     }
     /* Method Extraction 方法抽取

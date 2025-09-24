@@ -10,5 +10,4 @@ import java.util.Optional;
 public interface SegmentRepository extends JpaRepository<Segment, Integer> {
 
     boolean existsByName(String name);  //判斷資料庫中是否已存在該 segment
-    Optional<Segment> findByName(String name);  //根據名稱查詢 segment
 }

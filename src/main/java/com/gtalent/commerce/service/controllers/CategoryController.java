@@ -15,10 +15,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Category 功能-第一版", description = "提供分類列表查詢、新增與軟刪除功能")
+
 @RestController
 @RequestMapping("/commerce-service/categories")
 @SecurityRequirement(name = "bearerAuth")
+@Tag(name = "Category 功能-第一版", description = "提供分類列表查詢、新增與軟刪除功能")
 public class CategoryController {
 
     private final CategoryService categoryService;

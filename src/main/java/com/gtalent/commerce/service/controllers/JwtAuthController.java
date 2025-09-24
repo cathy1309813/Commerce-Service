@@ -25,9 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-@Tag(name = "JWT Authentication", description = "API for user registration and login with JWT")
+
 @RestController
 @RequestMapping("/jwt")
+@Tag(name = "JWT Authentication", description = "API for user registration and login with JWT")
 public class JwtAuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;

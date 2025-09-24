@@ -1,5 +1,9 @@
 package com.gtalent.commerce.service.controllers;
 
+import com.gtalent.commerce.service.dto.CustomerDto;
+import com.gtalent.commerce.service.dto.ProductDto;
+import com.gtalent.commerce.service.exceptions.ResourceNotFoundException;
+import com.gtalent.commerce.service.models.Review;
 import com.gtalent.commerce.service.requests.CreateReviewRequest;
 import com.gtalent.commerce.service.requests.UpdateReviewRequest;
 import com.gtalent.commerce.service.responses.ReviewResponse;
@@ -14,10 +18,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Review 功能-第一版", description = "提供評論的 CRUD 及分頁查詢功能")
+
 @RestController
 @RequestMapping("/commerce-service/reviews")
 @SecurityRequirement(name = "bearerAuth")
+@Tag(name = "Review 功能-第一版", description = "提供評論的 CRUD 及分頁查詢功能")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -89,5 +94,39 @@ public class ReviewController {
             @Parameter(description = "評論ID", required = true) @PathVariable int reviewId) {
         reviewService.deleteReview(reviewId);
         return ResponseEntity.noContent().build();  //204
+    }
+
+    //5.取得單筆評論詳細
+    @GetMapping("/{reviewId}")
+    @Operation(summary = "取得單筆評論詳情", description = "回傳評論完整內容，包括顧客、產品、日期、星等與內容")
+    public ResponseEntity<ReviewResponse> getReviewById(@PathVariable int reviewId) {
+        Review review = reviewService.findById(reviewId)
+                .orElseThrow(() -> new ResourceNotFoundException("此 ID 評論不存在: " + reviewId));
+
+        //建立 CustomerDto
+        CustomerDto customerDto = new CustomerDto(
+                review.getCustomer().getId(),
+                review.getCustomer().getFirstName(),
+                review.getCustomer().getLastName()
+        );
+
+        //建立 ProductDto
+        ProductDto productDto = new ProductDto(
+                review.getProduct().getId()
+        );
+
+        // 建立 ReviewResponse
+        ReviewResponse response = new ReviewResponse(
+                review.getId(),
+                review.getRating(),
+                review.getComment(),
+                customerDto,  // 直接傳 DTO
+                productDto,   // 直接傳 DTO
+                review.getStatus().name(),
+                review.getDate(),
+                review.getCreatedAt()
+        );
+
+        return ResponseEntity.ok(response);
     }
 }
