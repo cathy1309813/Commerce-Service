@@ -1,0 +1,39 @@
+# Docker Compose 配置檔，定義多個容器服務及它們的關係
+version: '3.8'  # 指定 Docker Compose 的語法版本；3.8 以上支援較新功能（例如 depends_on 條件、資源限制）
+services:  # 定義所有服務
+  app:  # Spring Boot 應用程式服務
+    build: . # 從當前目錄的 Dockerfile 建構映像檔
+    ports:
+      - "8080:8080"  # 將容器內的 8080 埠對映到主機的 8080 埠，讓外部可以透過 http://localhost:8080 訪問
+    environment:  # 傳遞環境變數給 Spring Boot 應用程式
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/commerce_db  # 資料庫連線 URL，`db` 是下方 db 服務名稱，容器內可解析為主機名
+      SPRING_DATASOURCE_USERNAME: root  # 資料庫使用者名稱（此處為 root，正式環境建議使用專用帳號）
+      SPRING_DATASOURCE_PASSWORD: Qwas0321polk  # 資料庫密碼（建議改用 .env 檔或 Docker Secret 管理）
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update  # 啟動時自動更新資料庫結構；開發方便，但正式環境建議用 migrate 工具
+      SPRING_JPA_SHOW_SQL: "true"  # 將執行的 SQL 語句輸出到 console，方便除錯
+    depends_on:
+      - db  # 確保 app 在啟動前，db 服務會先被啟動（但不保證 MySQL 已完全可連線，Spring Boot 仍需重試機制）
+  db:  # MySQL 資料庫服務
+    image: mysql:8.0  # 使用 MySQL 官方 8.0 映像檔
+    environment:  # 初始化 MySQL 的環境變數
+      MYSQL_ROOT_PASSWORD: Qwas0321polk  # root 帳號密碼（正式環境建議改為更安全方式）
+      MYSQL_DATABASE: commerce_db  # 建立初始資料庫名稱 commerce_db
+    volumes:    # 將 MySQL 資料持久化，避免容器刪除後資料遺失
+      - db_data:/var/lib/mysql  # 將容器內的 /var/lib/mysql 資料目錄對映到 volume
+volumes:  # 定義 Docker volume
+  db_data:  # 儲存 db 的實際資料，即使容器刪除重建，資料仍會保留
+
+# 說明
+# 1. services 區塊定義了兩個服務：app（Spring Boot 應用程式）和 db（MySQL 資料庫）。
+#    - Docker Compose 會自動將這些服務放在同一個 default network 中，容器之間可以用服務名稱互相連線。
+#
+# 2. depends_on 可以確保 Docker 先啟動 db 容器，但不保證 MySQL 服務「完全可用」，
+#    - 它只保證容器進程已啟動，資料庫可能還在初始化。
+#    - Spring Boot 仍需要設定連線重試（或使用 healthcheck 來配合）。
+#
+# 3. volumes 用來保存資料庫資料，即使容器刪除後重建，資料仍會保留，
+#    - 這是 Docker 的 named volume，會存在 Docker 管理的目錄中，而不是專案資料夾。
+#
+# 4. Spring Boot 透過環境變數連接 db 容器，
+#    - 其中 "db" 是服務名稱，Compose 會自動解析成該容器的網路別名（hostname），
+#    - 3306 為 MySQL 預設埠，除非另行修改。
