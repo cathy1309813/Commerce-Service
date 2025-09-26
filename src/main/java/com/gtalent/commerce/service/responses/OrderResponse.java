@@ -13,15 +13,18 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderResponse {
-    private int id;                        //訂單ID
-    private String orderReference;         //訂單編號
-    private String userName;               //訂購者姓名
-    private LocalDateTime createdAt;       //系統下單完整時間 (含時分秒)
-    private OrderStatus status;            //訂單狀態
-    private boolean returned;              //是否退貨
-    private String shippingAddress;        //運送地址
+
+    private int id;                        // 訂單ID
+    private String orderReference;         // 訂單編號
+    private String userName;               // 訂購者姓名
+    private String userEmail;              // 訂購者信箱
+    private LocalDateTime createdAt;       // 系統下單完整時間 (含時分秒)
+    private OrderStatus status;            // 訂單狀態
+    private boolean isReturned;            // 是否退貨
+    private String shippingAddress;        // 運送地址
 
     private List<OrderItemResponse> items; // 商品明細列表
+
 
     //訂單統計金額
     private BigDecimal sum;                //商品總金額

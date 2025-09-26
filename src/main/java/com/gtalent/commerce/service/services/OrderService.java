@@ -14,9 +14,13 @@ import com.gtalent.commerce.service.requests.PatchOrderRequest;
 import com.gtalent.commerce.service.requests.OrderItemRequest;
 import com.gtalent.commerce.service.responses.OrderItemResponse;
 import com.gtalent.commerce.service.responses.OrderResponse;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +57,7 @@ public class OrderService {
     }
 
     //3.建立訂單
+    @Transactional
     public OrderResponse createOrder(OrderRequest request) {
         //1.檢查基本欄位
         if (request.getShippingAddress() == null || request.getShippingAddress().isBlank()) {
@@ -72,6 +77,9 @@ public class OrderService {
         order.setStatus(OrderStatus.ORDERED);
         order.setReturned(false);  // 預設未退貨
 
+        String reference = "ORD" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        order.setOrderReference(reference);
+
         //3.建立訂單明細
         List<OrderItem> orderItems = new ArrayList<>();
         for (OrderItemRequest itemReq : request.getItems()) {
@@ -90,15 +98,47 @@ public class OrderService {
             item.setProduct(product);           //與商品關聯（外鍵）
             item.setQuantity(itemReq.getQuantity());
             item.setPrice(product.getPrice());  //從資料庫設定價格
-
+            item.setProductName(product.getReference());
+            item.setDate(LocalDate.now());      //系統自動填入日期
             orderItems.add(item);
         }
         order.setItems(orderItems);
 
+        //4.在 createOrder Service 儲存 Order 時，先給 totalAmount、deliveryFee、taxAmount
+        //一個非 null 的初值（例如小計、0、0），避免資料庫報錯
+        BigDecimal totalAmount = orderItems.stream()
+                .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        order.setTotalAmount(totalAmount);
+        order.setDeliveryFee(BigDecimal.ZERO);  //暫時
+        order.setTaxAmount(BigDecimal.ZERO);    //暫時
+
         //5.儲存訂單
         Order savedOrder = orderRepository.save(order);
 
-        return convertToOrderResponse(savedOrder);
+        //6.轉換成 Response
+        OrderResponse response = new OrderResponse();
+        response.setId(savedOrder.getId());
+        response.setUserName(savedOrder.getUser().getFirstName() + " " + savedOrder.getUser().getLastName());
+        response.setUserEmail(savedOrder.getUser().getEmail());
+        response.setOrderReference(savedOrder.getOrderReference());
+        response.setShippingAddress(savedOrder.getShippingAddress());
+        response.setCreatedAt(savedOrder.getCreatedAt());
+        response.setStatus(savedOrder.getStatus());
+        response.setReturned(savedOrder.isReturned());
+
+        //套用 mapToDto 將每個 OrderItem 轉成 OrderItemResponse
+        List<OrderItemResponse> itemResponses = savedOrder.getItems().stream()
+                .map(i -> orderItemService.mapToDto(i, savedOrder.getCreatedAt()))
+                .peek(OrderItemResponse::calculateTotal)   //確保每個 item total 先計算
+                .toList();
+        response.setItems(itemResponses);
+
+        //7.計算 totals
+        orderItemService.calculateTotals(response);
+
+        return response;
     }
 
     //4.部分更新訂單
@@ -109,8 +149,32 @@ public class OrderService {
         if (patchRequest.getShippingAddress() != null) {
             order.setShippingAddress(patchRequest.getShippingAddress());
         }
-        if (patchRequest.getReturned() != null && patchRequest.getReturned()) {
-            order.setReturned(true);  //系統可自行判斷退貨流程
+        if (patchRequest.getReturned() != null) {
+            order.setReturned(patchRequest.getReturned());  //系統可自行判斷退貨流程
+            //當前訂單狀態是 DELIVERED (已送達) ，如果用戶申請退貨 (returned = true) ，則把訂單狀態改成 CANCELLED，
+            //這樣用戶退貨時，狀態自動反映 -> 訂單已取消/退貨
+            if (patchRequest.getReturned() && order.getStatus() == OrderStatus.DELIVERED) {
+                order.setStatus(OrderStatus.CANCELLED);
+            }
+        }
+        //處理狀態更新
+        if (patchRequest.getStatus() != null) {  //先判斷前端是否有傳送新的 status -> 如果有就繼續往下走
+            OrderStatus newStatus = patchRequest.getStatus();  //newStatus 希望更新的訂單狀態
+            OrderStatus current = order.getStatus();  //current 目前訂單的狀態
+
+            boolean canUpdateStatus = false;  //先假設「不允許變更」
+            if (current == OrderStatus.ORDERED) {
+                canUpdateStatus = (newStatus == OrderStatus.DELIVERED || newStatus == OrderStatus.CANCELLED);
+            } else if (current == OrderStatus.DELIVERED) {
+                canUpdateStatus = (newStatus == OrderStatus.CANCELLED);
+            }
+            //如果符合規則 (canUpdateStatus = true) 就更新狀態；不符合就拋出例外
+            if (canUpdateStatus) {
+                order.setStatus(newStatus);
+            } else {
+                throw new IllegalArgumentException(
+                        "不允許的狀態轉換: " + order.getStatus() + " → " + newStatus);
+            }
         }
         Order savedOrder = orderRepository.save(order);
 
@@ -120,15 +184,7 @@ public class OrderService {
         return response;
     }
 
-    //5.設定退貨
-    public Order setOrderReturned(int id, boolean returned) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException("找不到 ID 為 " + id + " 的訂單"));
-        order.setReturned(returned);
-        return orderRepository.save(order);
-    }
-
-    //6.刪除訂單
+    //5.刪除訂單
     public void deleteOrder(int id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException("找不到 ID 為 " + id + " 的訂單"));
@@ -161,4 +217,13 @@ public class OrderService {
 
         return response;
     }
+
+    /* @Transactional
+       用途:管理 資料庫交易 (Transaction)。
+       說明:
+       1.開啟一個資料庫交易 (Transaction)。
+       2.方法內的所有資料庫操作 (Repository.save、update、delete 等) 都在同一個交易中。
+       3.如果方法正常執行完畢 → 自動提交 (Commit)。
+       4.如果方法發生例外 → 自動回滾 (Rollback) ，資料庫不會留下一半更新的資料如果任一操作失敗，整個訂單與明細都不會被寫入資料庫。
+       目的:保證資料一致性和完整性。*/
 }

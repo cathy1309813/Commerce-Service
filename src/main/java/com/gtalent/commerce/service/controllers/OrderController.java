@@ -39,7 +39,7 @@ public class OrderController {
     })
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
         List<OrderResponse> orders = orderService.getAllOrders();
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(orders);
     }
 
     //2.取得單筆訂單
@@ -51,7 +51,10 @@ public class OrderController {
     })
     public ResponseEntity<OrderResponse> getOrderById(@PathVariable int id) {
         OrderResponse order = orderService.getOrderById(id);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        if (order == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();  //找不到返回 404
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(order);
     }
 
     //3.建立訂單
@@ -63,7 +66,7 @@ public class OrderController {
     })
     public ResponseEntity<OrderResponse> createOrder(@RequestBody @Valid OrderRequest orderRequest) {
         OrderResponse created = orderService.createOrder(orderRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     //4.部分更新訂單 -> 考慮到使用者不會去主動更新部分核心資訊，所以使用Patch而非Put
@@ -78,36 +81,7 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    //5.設定退貨
-    @PutMapping("/{id}/returned")
-    @Operation(
-            summary = "設定訂單退貨",
-            description = "使用者可以針對訂單申請退貨。系統會將 `returned` 欄位設為 true，" +
-                          "但不允許使用者直接修改訂單狀態。退貨申請會觸發系統判斷後續流程（例如退款、庫存調整等）。" +
-                          "若訂單不存在，回傳 404 錯誤。",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "退貨申請資料，僅需設 returned 為 true",
-                    required = true,
-                    content = @Content(
-                            schema = @Schema(implementation = PatchOrderRequest.class),
-                            examples = @ExampleObject(
-                                    value = "{\"returned\": true}"
-                            )
-                    )
-            ),
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "成功更新退貨狀態",
-                            content = @Content(schema = @Schema(implementation = OrderResponse.class))),
-                    @ApiResponse(responseCode = "404", description = "訂單不存在"),
-                    @ApiResponse(responseCode = "400", description = "請求資料不合法")
-            }
-    )
-    public ResponseEntity<Order> setOrderReturned(@PathVariable int id, @RequestParam boolean returned) {
-        Order updatedOrder = orderService.setOrderReturned(id, returned);
-        return ResponseEntity.ok(updatedOrder);
-    }
-
-    //6.刪除訂單
+    //5.刪除訂單
     @DeleteMapping("/orders/{id}")
     @Operation(summary = "刪除訂單", description = "標記訂單刪除時間，不會實體刪除")
     @ApiResponses(value = {

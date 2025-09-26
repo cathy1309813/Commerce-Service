@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderRequest {
-    private int userId;                //訂購者 ID
+    private int userId;                    //訂購者 ID
     private String shippingAddress;        //運送地址
     private List<OrderItemRequest> items;  //訂單商品明細
 }

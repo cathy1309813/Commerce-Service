@@ -24,7 +24,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "order_reference", length = 20, nullable = false)
+    @Column(name = "order_reference", length = 20, nullable = true)
     private String orderReference;  //訂單編號
 
     @ManyToOne
@@ -32,7 +32,7 @@ public class Order {
     private User user;  //關聯 User -> 訂購者
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column
     private OrderStatus status;  //訂單狀態 -> ordered, delivered, cancelled
 
     @Column(name = "shipping_address", length = 255, nullable = false)
