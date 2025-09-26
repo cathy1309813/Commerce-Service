@@ -160,7 +160,7 @@ public class ProductService {
         response.setThumbnailUrl(createdProduct.getThumbnailUrl());
         response.setWidth(createdProduct.getWidth());
         response.setHeight(createdProduct.getHeight());
-        response.setHeight(createdProduct.getDepth());
+        response.setDepth(createdProduct.getDepth());
 
         if (createdProduct.getCategory() != null) {
             CategoryResponse categoryResponse = new CategoryResponse();
