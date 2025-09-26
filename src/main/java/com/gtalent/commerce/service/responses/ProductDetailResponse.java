@@ -17,6 +17,7 @@ public class ProductDetailResponse {
     private String reference;
     private BigDecimal width;
     private BigDecimal height;
+    private BigDecimal depth;
     private BigDecimal price;
     private int stock;
     private int sales;

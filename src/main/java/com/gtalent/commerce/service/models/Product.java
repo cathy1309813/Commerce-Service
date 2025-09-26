@@ -32,11 +32,14 @@ public class Product {
     @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false)
     private Category category;   //直接關聯到 Category
 
-    @Column(name = "width", nullable = false, precision = 6, scale = 2, columnDefinition = "DECIMAL(6,2) DEFAULT 0.00")
+    @Column(name = "width", nullable = false, precision = 6, scale = 2)
     private BigDecimal width;
 
-    @Column(name = "height", nullable = false, precision = 6, scale = 2, columnDefinition = "DECIMAL(6,2) DEFAULT 0.00")
+    @Column(name = "height", nullable = false, precision = 6, scale = 2)
     private BigDecimal height;
+
+    @Column(name = "depth", nullable = false, precision = 6, scale = 2)
+    private BigDecimal depth;
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;

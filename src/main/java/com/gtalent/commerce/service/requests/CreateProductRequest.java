@@ -21,6 +21,9 @@ public class CreateProductRequest {
     @NotNull(message = "Height 必填")
     private Double height;
 
+    @NotNull(message = "depth 必填")
+    private Double depth;
+
     @NotNull(message = "Price 必填")
     private BigDecimal price;
 
@@ -34,11 +37,11 @@ public class CreateProductRequest {
     private String description;
 
     @NotNull(message = "Image 必填")
-    private String images;
+    private String imageUrl;
 
     @NotNull(message = "Thumbnail 必填")
-    private String thumbnail;
+    private String thumbnailUrl;
 
     @NotNull(message = "CategoryId 必填")
-    private Integer categoryId;  //新增欄位
+    private Integer category;  //新增欄位
 }

@@ -135,14 +135,15 @@ public class ProductService {
         product.setReference(request.getReference());
         product.setWidth(BigDecimal.valueOf(request.getWidth()));
         product.setHeight(BigDecimal.valueOf(request.getHeight()));
+        product.setDepth(BigDecimal.valueOf(request.getDepth()));
         product.setPrice(request.getPrice());
         product.setStock(request.getStock());
         product.setSales(request.getSales());
         product.setDescription(request.getDescription());
-        product.setThumbnailUrl(request.getThumbnail());
+        product.setThumbnailUrl(request.getThumbnailUrl());
 
-        if(request.getCategoryId() != null) {
-            Category category = categoryRepository.findById(request.getCategoryId())
+        if(request.getCategory() != null) {
+            Category category = categoryRepository.findById(request.getCategory())
                     .orElseThrow(() -> new RuntimeException("無此分類"));
             product.setCategory(category);
         }
@@ -159,6 +160,7 @@ public class ProductService {
         response.setThumbnailUrl(createdProduct.getThumbnailUrl());
         response.setWidth(createdProduct.getWidth());
         response.setHeight(createdProduct.getHeight());
+        response.setHeight(createdProduct.getDepth());
 
         if (createdProduct.getCategory() != null) {
             CategoryResponse categoryResponse = new CategoryResponse();
@@ -182,11 +184,11 @@ public class ProductService {
         product.setStock(request.getStock());
         product.setSales(request.getSales());
         product.setDescription(request.getDescription());
-        product.setThumbnailUrl(request.getThumbnail());
+        product.setThumbnailUrl(request.getThumbnailUrl());
 
         //3.更新分類
-        if (request.getCategoryId() != null) {
-            Category category = categoryRepository.findById(request.getCategoryId())
+        if (request.getCategory() != null) {
+            Category category = categoryRepository.findById(request.getCategory())
                     .orElseThrow(() -> new RuntimeException("無此分類"));
             product.setCategory(category);
         }
