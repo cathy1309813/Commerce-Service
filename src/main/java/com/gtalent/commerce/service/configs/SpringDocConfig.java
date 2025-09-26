@@ -43,6 +43,7 @@ public class SpringDocConfig {
                               "/commerce-service/products/**",
                               "/commerce-service/reviews/**",
                               "/commerce-service/categories/**",
+                              "/commerce-service/orders/**",
                               "/jwt/**",
                               "/v3/api-docs/**")
                 .build();

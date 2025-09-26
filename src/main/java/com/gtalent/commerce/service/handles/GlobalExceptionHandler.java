@@ -1,5 +1,6 @@
 package com.gtalent.commerce.service.handles;
 
+import com.gtalent.commerce.service.exceptions.OrderNotFoundException;
 import com.gtalent.commerce.service.responses.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.time.LocalDateTime;
 
 @ControllerAdvice  //@ControllerAdvice -> 全域例外處理器，會自動攔截所有 Controller 中拋出的例外
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler {  //處理已存在的例外類別
 
     /* @ExceptionHandler
        說明 -> 是 Spring MVC 提供的例外處理註解。
@@ -42,6 +43,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAll(Exception ex) {
         return buildErrorResponse("系統錯誤: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleOrderNotFound(OrderNotFoundException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     //建立統一 ErrorResponse

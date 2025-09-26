@@ -4,8 +4,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+
 
 @Entity
 @Table(name = "orders_items")
@@ -15,14 +18,16 @@ import java.math.BigDecimal;
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
-    private Order order;  //對應 orders id
+    @ToString.Exclude  //避免循環引用
+    private Order order;  //對應 orders.id
 
-    @Column(name = "product_id", nullable = false)
-    private Long productId;  //對應 products id
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;  //對應 products.id
 
     @Column(name = "product_name", length = 100, nullable = false)
     private String productName;
@@ -33,7 +38,10 @@ public class OrderItem {
     @Column(nullable = false)
     private BigDecimal price;
 
+    @Column(name = "date", nullable = false)
+    private LocalDate date;  // 僅存下單日期，用於列表顯示
+
     public BigDecimal getTotal() {
-        return price.multiply(BigDecimal.valueOf(quantity));  //計算此明細的總金額
+        return price.multiply(BigDecimal.valueOf(quantity));  //計算單個商品明細的小計
     }
 }

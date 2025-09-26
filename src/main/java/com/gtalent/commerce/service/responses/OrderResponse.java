@@ -1,22 +1,31 @@
 package com.gtalent.commerce.service.responses;
 
+import com.gtalent.commerce.service.enums.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderResponse {
-    private Integer id;
-    private String orderReference;
-    private Long userId;
-    private OrderStatus status;
-    private BigDecimal totalAmount;
-    private LocalDateTime orderDate;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private int id;                        //訂單ID
+    private String orderReference;         //訂單編號
+    private String userName;               //訂購者姓名
+    private LocalDateTime createdAt;       //系統下單完整時間 (含時分秒)
+    private OrderStatus status;            //訂單狀態
+    private boolean returned;              //是否退貨
+    private String shippingAddress;        //運送地址
+
+    private List<OrderItemResponse> items; // 商品明細列表
+
+    //訂單統計金額
+    private BigDecimal sum;                //商品總金額
+    private BigDecimal delivery;           //運費
+    private BigDecimal tax;                //稅金 (20%)
+    private BigDecimal total;              //含運費與稅金總金額
 }
