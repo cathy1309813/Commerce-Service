@@ -14,7 +14,9 @@ import com.gtalent.commerce.service.requests.PatchOrderRequest;
 import com.gtalent.commerce.service.requests.OrderItemRequest;
 import com.gtalent.commerce.service.responses.OrderItemResponse;
 import com.gtalent.commerce.service.responses.OrderResponse;
+import com.gtalent.commerce.service.responses.PendingOrderResponse;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -48,6 +50,27 @@ public class OrderService {
         }
         return responses;
     }
+
+    //1.1 依訂單狀態篩選取得分頁列表
+    public Page<OrderResponse> getOrdersByPage(OrderStatus status, Pageable pageable) {
+        Page<Order> ordersPage;
+
+        if (status != null) {
+            //有指定狀態就依狀態查詢
+            ordersPage = orderRepository.findByStatus(status, pageable);
+        } else {
+            //沒指定就查全部
+            ordersPage = orderRepository.findAll(pageable);
+        }
+
+        List<OrderResponse> orderResponses = ordersPage.getContent().stream()
+                .map(this::convertToOrderResponse)
+                .toList();
+
+        return new PageImpl<>(orderResponses, pageable, ordersPage.getTotalElements());
+    }
+
+
 
     //2.取得單筆訂單
     public OrderResponse getOrderById(int id) {
@@ -216,6 +239,19 @@ public class OrderService {
         orderItemService.calculateTotals(response);
 
         return response;
+    }
+
+    //待處理訂單
+    public List<PendingOrderResponse> getPendingOrders() {
+        List<Order> pendingOrders = orderRepository.findByStatus(OrderStatus.ORDERED);
+        return pendingOrders.stream()
+                .map(o -> new PendingOrderResponse(
+                        o.getId(),
+                        o.calculateTotal(),   //總金額含稅金與運費
+                        o.getCreatedAt(),
+                        o.getItems().size()   //商品數量
+                ))
+                .toList();
     }
 
     /* @Transactional

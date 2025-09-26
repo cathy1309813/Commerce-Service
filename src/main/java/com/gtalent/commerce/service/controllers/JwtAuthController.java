@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-
 @RestController
 @RequestMapping("/jwt")
 @Tag(name = "JWT Authentication", description = "API for user registration and login with JWT")

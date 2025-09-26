@@ -18,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/commerce-service/reviews")
 @SecurityRequirement(name = "bearerAuth")

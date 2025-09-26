@@ -5,7 +5,6 @@ import com.gtalent.commerce.service.repositories.CategoryRepository;
 import com.gtalent.commerce.service.requests.CreateCategoryRequest;
 import com.gtalent.commerce.service.responses.CategoryResponse;
 import com.gtalent.commerce.service.responses.ProductListResponse;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -13,9 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
-import static java.util.stream.Collectors.toList;
 
 @Service
 public class CategoryService {
